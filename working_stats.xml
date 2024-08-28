@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<team_stats>
+  <mra_rush_yards>185</mra_rush_yards>
+  <mra_pass_yards>309</mra_pass_yards>
+  <mra_total_yards>494</mra_total_yards>
+  <mra_time_of_possession>18:43</mra_time_of_possession>
+  <mra_penalties>6</mra_penalties>
+  <mra_first_downs>25</mra_first_downs>
+  <parklane_rush_yards>-3</parklane_rush_yards>
+  <parklane_pass_yards>417</parklane_pass_yards>
+  <parklane_total_yards>414</parklane_total_yards>
+  <parklane_time_of_possession>28:42</parklane_time_of_possession>
+  <parklane_penalties>5</parklane_penalties>
+  <parklane_first_downs>27</parklane_first_downs>
+</team_stats>

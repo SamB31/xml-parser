@@ -2,6 +2,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import requests
 import time
+import sys
 import os
 
 def parse_xml(xml_content):
@@ -35,7 +36,7 @@ def parse_xml(xml_content):
                 'first_downs': int(firstdowns.get('no', 0)) if firstdowns is not None else 0
             }
     
-    return team_stats
+    return team_stats, team_names
 
 def fetch_and_parse(url):
     response = requests.get(url)
@@ -45,30 +46,48 @@ def fetch_and_parse(url):
         print(f"Failed to fetch XML. Status code: {response.status_code}")
         return None
 
-def save_stats_xml(stats, filename):
+def save_stats_xml(stats, filename, team_names, home_team, vis_team):
     root = ET.Element("team_stats")
     
+    # Mapping of team names to desired prefixes
+    team_prefix_map = {
+        team_names['H']: home_team,
+        team_names['V']: vis_team
+    }
+    
     for team_name, team_stats in stats.items():
-        team_elem = ET.SubElement(root, "team")
-        team_elem.set("name", team_name)
+        # Get the appropriate prefix or fallback to a safe prefix
+        team_prefix = team_prefix_map.get(team_name, team_name.lower().replace(" ", "_"))
         
         for stat, value in team_stats.items():
-            stat_elem = ET.SubElement(team_elem, stat.replace(" ", "_"))
+            # Create a tag with the team prefix and the stat name
+            stat_tag = f"{team_prefix}_{stat.replace(' ', '_')}"
+            stat_elem = ET.SubElement(root, stat_tag)
             stat_elem.text = str(value)
     
     xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
+
+
+    # Ensure the file is saved in the current directory
+    script_dir = os.path.dirname(sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__))
+    file_path = os.path.join(script_dir, filename)
     
-    with open(filename, 'w') as f:
+    # Write the result to the file
+    with open(file_path, 'w') as f:
         f.write(xml_str)
 
-def main(url, interval=10, output_file="team_stats.xml"):
+def main(interval=10, output_file="team_stats.xml"):
+    xml_url = input("Enter the XML URL: ").strip()
+    home_team = input("Enter the home team name (all lowercase, no spaces): ").strip()
+    vis_team = input("Enter the away team name (all lowercase, no spaces): ").strip()
+
     while True:
-        stats = fetch_and_parse(url)
+        stats, team_names = fetch_and_parse(xml_url)
         if stats:
-            save_stats_xml(stats, output_file)
+            save_stats_xml(stats, output_file, team_names, home_team, vis_team)
             print(f"Stats saved to {output_file}")
         time.sleep(interval)
 
 if __name__ == "__main__":
     xml_url = "https://prestosports.com/action/stats/downloadXML.jsp?event_id=lpha0epkiq9wfvsp"  # Replace with your actual URL
-    main(xml_url)
+    main()
